@@ -12,10 +12,6 @@ const router = createRouter({
 					path: '/',
 					name: 'index-首页',
 					component: () => import('@/views/index_item/HomeView.vue')
-				}, {
-					path: '/customer',
-					name: 'index-客户管理',
-					component: () => import('@/views/index_item/customer/CustomerView.vue')
 				}
 			]
 		},{
