@@ -43,6 +43,7 @@
 	import router from '@/router';
 	import { reactive, ref } from "vue";
 	import { ElMessage } from 'element-plus';
+	import { login } from '../../net';
 
 	const formRef = ref()
 	const loginLoading = ref(false)
@@ -65,7 +66,9 @@
 	function userLogin() {
 		formRef.value.validate((isValid) => {
 			if(isValid) {
-				
+				login(form.username, form.password, form.remember, () => {
+					router.push('/');
+				})
 			}
 		});
 	}

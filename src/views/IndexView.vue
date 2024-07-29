@@ -17,46 +17,33 @@
 						<b style="color: #FFF;" v-show="logoTextShow">超市订单管理系统</b>
 					</div>
 					<el-menu-item index="/">
-						<el-icon v-show="!logoTextShow" style="color: #b1b3b8;">
+						<el-icon v-show="!logoTextShow" class="iconColor">
 							<HomeFilled />
 						</el-icon>
 						<template #title>
 							<component :is="HomeFilled" class="iconColor"></component>
-							<span>首页</span>
+							<span style="margin-left: 31px;">首页</span>
 						</template>
 					</el-menu-item>
-						<el-sub-menu index="1">
+					
+					<!-- <el-sub-menu index="1">
 					    <template #title>
-							<el-icon class="iconColor"><Menu /></el-icon>
-							<span>基本资料维护</span>
+							<component :is="Menu" class="iconColor"></component>
+							<span>系统管理</span>
 					    </template>
-						<el-menu-item index="/customer">
-							<el-icon class="iconColor"><UserFilled /></el-icon> 
-							<samp>客户管理</samp>
-						</el-menu-item>	
-					<!-- 	<el-menu-item index="/account">
-							<el-icon class="iconColor"><UserFilled /></el-icon> 
+						<el-menu-item index="11">
 							<samp>用户管理</samp>
-						</el-menu-item>	
-						<el-menu-item index="/provider">
-							<el-icon class="iconColor"><OfficeBuilding /></el-icon>
-							<samp>供应商管理</samp>
-						</el-menu-item>	
-						<el-menu-item index="/bill">
-							<el-icon class="iconColor"><Van /></el-icon>
-							<samp>订单管理</samp>
-						</el-menu-item>	 -->
-					</el-sub-menu>
-					<!-- <el-sub-menu index="2">
-					    <template #title>
-							<el-icon class="iconColor"><TrendCharts /></el-icon>
-							<span>数据分析</span>
-					    </template>
-						<el-menu-item index="/data">
-							<el-icon class="iconColor"><Histogram /></el-icon>
-							<samp>图表分析</samp>
-						</el-menu-item>	
+						</el-menu-item>				
 					</el-sub-menu> -->
+					<el-sub-menu v-for="item in menuList" :index="item.id">		
+						<template #title>
+							<component :is="item.iconCls" class="iconColor"></component>
+							<span style="margin-left: 31px;"> {{ item.name }} </span>
+						</template>
+						<el-menu-item v-for="menu in item.children" :index="menu.path">
+							<samp> {{ menu.name }} </samp>
+						</el-menu-item>			
+					</el-sub-menu>
 				</el-menu>
 			</el-aside>
 			<el-container>
@@ -74,7 +61,7 @@
 							<div class="dropdown-content">
 								<span style="margin-right: 5px; font-size: 14px;"> Mieriki </span>
 								<!-- <el-icon><User /></el-icon> -->
-								<el-avatar src="https://t.tutu.to/th/mKTGj" :size="25"></el-avatar>
+								<el-avatar :src="user.userFace" :size="25"></el-avatar>
 							</div>
 							<template #dropdown>
 								<el-dropdown-menu>
@@ -116,13 +103,29 @@
 </template>
 
 <script setup lang="ts">
-	import { ref } from 'vue'
-	import { HomeFilled, Fold, Expand, Menu, User, UserFilled, OfficeBuilding, Van, Histogram, TrendCharts } from '@element-plus/icons-vue';
+	import { ref, onMounted, Menu } from 'vue'
 	import router from '../router';
+	import { HomeFilled, Tools } from '@element-plus/icons-vue'
+	import { useMeanStore } from '../store';
+	import { getUserInfo } from '../net';
 
-	let logoTextShow: boolean = ref(true);
-	let isCollapse: boolean = ref(false);
-	let sideWidth: number = ref(200);
+	let logoTextShow: Ref<boolean> = ref(true);
+	let isCollapse: Ref<boolean> = ref(false);
+	let sideWidth: Ref<number> = ref(200);
+	
+	const menuList: Ref<any> = ref();
+	const meanStore: any = useMeanStore();
+	
+	const user = ref({})
+	
+	function initializePage() {
+		menuList.value = meanStore.menuList;
+		user.value = meanStore.userInfo
+	}
+	
+	onMounted(() => {
+		initializePage();
+	});
 	
 	
 	
@@ -214,12 +217,18 @@
 	}
 
 	.iconColor {
+		position: absolute;
 		width: 18px;
+		height: 18px;
 		margin-left: 3px;
-		margin-right: 10px;
 		color: #b1b3b8;
 	}
 
+	svg {
+		width: 18px;
+		height: 18px;
+	}
+	
 	.el-dropdown-link:focus-visible {
 		outline: unset;
 	}

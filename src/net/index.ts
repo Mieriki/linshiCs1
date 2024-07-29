@@ -1,8 +1,13 @@
 import axios from "axios";
 import { ElMessage, MessageParamsWithType } from "element-plus";
+import 'element-plus/dist/index.css'
 
-function accessHeader() {
-	return {}
+const authItemName = "authorize"
+
+const accessHeader = () => {
+    return {
+        'Authorization': `Bearer ${takeAccessToken()}`
+    }
 }
 
 const defaultError = (error: any) => {
@@ -15,17 +20,41 @@ const defaultFailure = (message: MessageParamsWithType, status: any, url: any) =
     ElMessage.warning(message)
 }
 
-const getMenuRouter = (router: any,store: any) => {
-	console.log("正在初始化工作列表......")
-	console.log(store.state)
-	// if (store.router.length > 0) {
-	// 	return
-	// }
-	// get("/menus/get/router/1", (data: any) => {
-	// 	console.log(data)
-	// 	store.setRouter(data)
-	// 	console.log(store.router)
-	// })
+function takeAccessToken() {
+    const str = localStorage.getItem(authItemName) || sessionStorage.getItem(authItemName);
+    if(!str) return null
+    const authObj = JSON.parse(str)
+    if(new Date(authObj.expire) <= new Date()) {
+        deleteAccessToken()
+        ElMessage.warning("登录状态已过期，请重新登录！")
+        return null
+    }
+    return authObj.token
+}
+
+function storeAccessToken(remember, token, expire){
+    const authObj = {
+        token: token,
+        expire: expire
+    }
+    const str = JSON.stringify(authObj)
+    if(remember)
+        localStorage.setItem(authItemName, str)
+    else
+        sessionStorage.setItem(authItemName, str)
+}
+
+function deleteAccessToken() {
+    localStorage.removeItem(authItemName)
+    sessionStorage.removeItem(authItemName)
+}
+
+const getMenuRouter = () => {
+	return new Promise<any>((resolve, reject) => {
+		get(`/menus/get/router/1`, (data) => {
+			resolve(data); 
+		})
+	});	
 }
 
 function analysisCode(code: number) {
@@ -54,11 +83,33 @@ function internalGet(url: string, headers: {}, success: (arg0: any) => void, fai
 }
 
 function post(url: string, data: any, success: (arg0: any) => void, failure = defaultFailure) {
-    internalPost(url, data, accessHeader() , success, failure)
+    internalPost(url, data, accessHeader(), success, failure)
 }
 
 function get(url: string, success: (arg0: any) => void, failure = defaultFailure) {
     internalGet(url, accessHeader(), success, failure)
 }
 
-export { post, get, accessHeader, getMenuRouter }
+function getUserInfo() {
+	return new Promise<any>((resolve, reject) => {
+		get(`/admins/get/1`, (data) => {
+			console.log('user', data)
+			resolve(data); 
+		}) 
+	});	
+}
+
+function login(username, password, remember, success, failure = defaultFailure){
+    internalPost('/auth/login', {
+        username: username,
+        password: password
+    }, {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }, (data) => {
+        storeAccessToken(remember, data.token, data.expire)
+        ElMessage.success(`登录成功，欢迎 ${data.username} 来到我们的系统`)
+        success(data)
+    }, failure)
+}
+
+export { post, get, accessHeader, getMenuRouter, getUserInfo, login }

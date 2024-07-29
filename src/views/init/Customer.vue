@@ -1,11 +1,12 @@
 <template>
 	<div style="margin-bottom: 10px;">
 		<el-row>
-			<el-input v-model="searchValue.name" style="width: 240px;" size="small" placeholder="请输入名称" type="text">
+			<el-input v-model="searchValue.contact" style="width: 240px;" size="small" placeholder="请输入联系人" type="text">
 				<template #prepend>
 					<el-button @click="handleSearch" :icon="Search" />
 				</template>
 			</el-input>
+			<el-input v-model="searchValue.address" style="width: 200px; margin-left: 5px;" size="small" placeholder="请输入地址" type="text"></el-input>
 			<el-button  @click="handleSearch" style="margin-left: 5px; width: 75px; height: 32px;" size="small" type="primary">搜索</el-button>
 			
 			<el-button type="primary" style="width: 80px; height: 32px;" size="small" @click="nextAdd">新增<el-icon><CirclePlus /></el-icon></el-button>
@@ -105,12 +106,13 @@
 			<el-form-item label="地址" prop="address" style="width: 500px;">
 				<el-input v-model="customer.address"></el-input>
 			</el-form-item>
-			<el-form-item label="备注" prop="remarks" style="width: 400px;">
+			<el-form-item label="备注" prop="remarks" style="width: 500px;">
 				<el-input v-model="customer.remarks"></el-input>
 			</el-form-item>
-			<el-form-item>
-				<el-button type="primary" style="width: 290px; margin-top: 20px; margin-left: 40px;" @click="addSubmitForm">新增</el-button>
-			</el-form-item>
+			<el-row style="display: flex; justify-content: center; align-items: center; ">
+				<el-button type="primary" style="width: 200px; margin-top: 20px;" @click="addSubmitForm">新增</el-button>
+				<el-button type="info" style="width: 200px; margin-top: 20px; margin-left: 60px;" @click="handleClose">取消</el-button>
+			</el-row>
 		</el-form>
 	</el-dialog>
 	
@@ -132,34 +134,34 @@
 			<el-form-item label="地址" prop="address" style="width: 500px;">
 				<el-input v-model="customer.address"></el-input>
 			</el-form-item>
-			<el-form-item label="备注" prop="remarks" style="width: 400px;">
+			<el-form-item label="备注" prop="remarks" style="width: 500px;">
 				<el-input v-model="customer.remarks"></el-input>
 			</el-form-item>
-			<el-form-item>
-				<el-button type="primary" style="width: 290px; margin-top: 20px; margin-left: 40px;" @click="editSubmitForm">修改</el-button>
-			</el-form-item>
+			<el-row style="display: flex; justify-content: center; align-items: center; ">
+				<el-button type="primary" style="width: 200px; margin-top: 20px;" @click="editSubmitForm">修改</el-button>
+				<el-button type="info" style="width: 200px; margin-top: 20px; margin-left: 60px;" @click="handleClose">取消</el-button>
+			</el-row>
 		</el-form>
 	</el-dialog>
 </template>
 
 <script setup lang="ts">
-	//导入依赖
 	import { ref, onMounted, reactive } from 'vue';
-	import { Search, CirclePlus, Remove, Download, Upload } from '@element-plus/icons-vue';
+	import { Search } from '@element-plus/icons-vue';
 	import { get, post, accessHeader } from '@/net';
 	import router from '@/router';
 	
-	// 响应式数据定义
 	let customerList = ref([]);
 	const addDialogVisible = ref(false)
 	const editDialogVisible = ref(false)
-	const accountId = ref(null)
 
 	let selectedRowList = ref([])
 	const count = ref(0)
 	
 	let searchValue = reactive({
 		name: '',
+		contact: '',
+		address: '',
 		currentPage: 1,
 		pageSize: 10
 	})
@@ -304,8 +306,12 @@
 		],
 	    number: [
 	        { required: true, message: '联系电话不能为空' },
-	        { max: 20, message: '编号不能超过20个字' },
-	    ],
+	        { max: 20, message: '联系电话不能超过20个字' },
+			{
+			    pattern: /^(\d+|\d+-\d+)$/,
+			    message: '电话格式不正确'
+			}
+		],
 	    remarks: [
 	        { max: 200, message: '备注不能超过200个字' },
 	    ],
